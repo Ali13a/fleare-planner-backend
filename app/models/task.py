@@ -20,9 +20,8 @@ class Task(Base):
     description = Column(Text, nullable=True)
     status = Column(Enum(TaskStatus), default=TaskStatus.todo, index=True)
     priority = Column(Integer, default=3)  # 1 high - 5 low
-    due_date = Column(DateTime, nullable=True, index=True)
-    tags = Column(ARRAY(String), default=[])
-    metadata = Column(JSONB, default={})
+    due_date = Column(DateTime, nullable=True, index=True,)
+    tags = Column(String(50))
     owner_id = Column(Integer, nullable=True, index=True)  # for future auth
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
