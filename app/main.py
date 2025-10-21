@@ -1,13 +1,13 @@
 from fastapi import FastAPI
+from app.routers.task import *
+from app.db.base import Base
+from app.db.session import engine
 
-app = FastAPI()
+def create_app():
+    mainApp = FastAPI(title="Fleare Planner Todo API")
+    mainApp.include_router(router)
+    return mainApp
 
+app = create_app()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+Base.metadata.create_all(bind=engine)
