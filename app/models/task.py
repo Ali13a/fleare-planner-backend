@@ -2,13 +2,15 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, Boolean, ForeignKey
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from app.db.base import Base
-from app.schemas.task import TaskStatus,TaskTags
+from app.schemas.task import TaskStatus, TaskTags
+
 
 def round_to_minute():
-    now=datetime.utcnow()
-    return now.replace(second=0,microsecond=0)
+    now = datetime.utcnow()
+    return now.replace(second=0, microsecond=0)
+
+
 class Task(Base):
     __tablename__ = "tasks"
 
@@ -17,8 +19,8 @@ class Task(Base):
     description = Column(Text, nullable=True)
     status = Column(Enum(TaskStatus), default=TaskStatus.todo, index=True)
     priority = Column(Integer, default=3)  # 1 high - 5 low
-    Time_required=Column(Integer,nullable=True)
-    due_date = Column(DateTime, nullable=True, index=True,)
+    Time_required = Column(Integer, nullable=True)
+    due_date = Column(DateTime, nullable=True, index=True, )
     tags = Column(Enum(TaskTags), default=TaskTags.normal, index=True)
     owner_id = Column(Integer, nullable=True, index=True)  # for future auth
     created_at = Column(DateTime(timezone=True), server_default=func.now())

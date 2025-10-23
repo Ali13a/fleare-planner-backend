@@ -2,16 +2,12 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
-
-from starlette import schemas
-
 from app.crud import task
 from app.deps import get_db
-from app.models.task import Task
 from app.schemas.task import TaskResponse, TaskCreate, TaskUpdate
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
 
 @router.get("/")
 def get_tasks(db: Session = Depends(get_db)):
@@ -29,7 +25,7 @@ def get_task_by_id(task_id: int, db: Session = Depends(get_db)):
     return {"results": tasks}
 
 
-@router.get("/{task_title}")
+@router.get("/title/{task_title}")
 def get_task_by_title(task_title: str, db: Session = Depends(get_db)):
     task_obj = task.get_task_by_title(db, task_title)
     if not task_obj:
@@ -53,12 +49,10 @@ def update_task(t: TaskUpdate, db: Session = Depends(get_db)):
     return updated_task
 
 
-@router.delete("/tasks/{task_id}", status_code=204)
+@router.delete("/{task_id}", status_code=204)
 def delete_task(task_id: int, db: Session = Depends(get_db)):
     deleted_task = task.delete_task(db, task_id)
     if not deleted_task:
         raise HTTPException(status_code=404, detail="Task not found")
 
     return {"message": "Task deleted successfully"}
-
-

@@ -1,16 +1,17 @@
 # عملیات CRUD برای مدل Task
 from http.client import HTTPException
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from app.models.task import Task
 from sqlalchemy.orm import Session
 from sqlalchemy import Case
-from datetime import datetime,timedelta,time,date
+from datetime import datetime, timedelta, time, date
 from app.schemas.task import TaskCreate, TaskUpdate
+
 
 def get_tasks(db: Session):
     tasks = db.query(Task).filter(Task.is_deleted == False).all()
 
-    # ✅ تسک‌های اداری جلوتر از نرمال
+    # تسک‌های اداری جلوتر از نرمال
     tasks.sort(key=lambda t: (0 if "administrative" in (t.tags or []) else 1, t.created_at))
 
     organized_tasks = []
@@ -63,6 +64,8 @@ def get_tasks(db: Session):
         organized_tasks.append(task)
 
     return organized_tasks
+
+
 def get_task_by_id(db: Session, task_id: str):
     tasks = db.query(Task) \
         .filter(Task.id == task_id, Task.is_deleted == False) \
@@ -83,6 +86,7 @@ def create_task(db: Session, t: TaskCreate):
     db.commit()
     db.refresh(new_task)
     return new_task
+
 
 def update_task(db: Session, t: TaskUpdate):
     task = db.query(Task).filter(Task.id == t.id, Task.is_deleted == False).first()
