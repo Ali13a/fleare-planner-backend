@@ -11,6 +11,9 @@ class TaskStatus(str, Enum):
     in_progress = "in_progress"
     done = "done"
     archived = "archived"
+class TaskTags(str,Enum):
+    administrative='administrative'
+    normal='normal'
 
 
 class TaskBase(BaseModel):
@@ -18,7 +21,8 @@ class TaskBase(BaseModel):
     description: Optional[str] = None
     status: Optional[TaskStatus] = TaskStatus.todo
     priority: Optional[int] = 3
-    tags: Optional[str] = None
+    tags: Optional[str] = TaskTags.normal
+    Time_required:Optional[int]=60
     due_date: Optional[datetime] = None
 
 
