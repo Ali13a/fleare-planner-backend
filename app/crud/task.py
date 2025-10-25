@@ -6,20 +6,28 @@ from sqlalchemy.orm import Session
 from sqlalchemy import Case
 from datetime import datetime, timedelta, time, date
 from app.schemas.task import TaskCreate, TaskUpdate
+from sqlalchemy.sql import func
 
 
 def get_tasks(db: Session):
-    tasks = db.query(Task).filter(Task.is_deleted == False).all()
+    now = datetime.now()
+    now2= date.today()
+    tasks = db.query(Task).filter(func.date(Task.due_date)==now2).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
 
     # تسک‌های اداری جلوتر از نرمال
-    tasks.sort(key=lambda t: (0 if "administrative" in (t.tags or []) else 1, t.created_at))
+    def tag_priority(tags):
+        if "administrative" in tags:
+            return 0
+        else:
+            return 1
+    tasks.sort(key=lambda t: (3 if t.due_date < now else 2, tag_priority(t.tags) , t.created_at))
 
     organized_tasks = []
+    pastdate=[]
 
     ADMIN_START, ADMIN_END = time(8, 0), time(14, 0)
     NORMAL_START, NORMAL_END = time(8, 0), time(22, 0)
 
-    now = datetime.now()
     day_usage = {}  # {date: {"last_task": datetime}}
 
     for task in tasks:
