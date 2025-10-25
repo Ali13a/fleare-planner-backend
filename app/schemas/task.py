@@ -24,7 +24,6 @@ class TaskBase(BaseModel):
     priority: Optional[int] = 3
     tags: Optional[TaskTags] = TaskTags.normal
     Time_required: Optional[int] = 60
-    due_date: Optional[datetime] = None
 
 
 class TaskCreate(TaskBase):

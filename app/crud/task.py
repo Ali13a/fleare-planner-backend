@@ -88,8 +88,11 @@ def create_task(db: Session, t: TaskCreate):
     return new_task
 
 
-def update_task(db: Session, t: TaskUpdate):
-    task = db.query(Task).filter(Task.id == t.id, Task.is_deleted == False).first()
+def update_task(db: Session, id: int, t: TaskUpdate):
+    task = db.query(Task).filter(Task.id == id, Task.is_deleted == False).first()
+
+    if not task:
+        return None
 
     for key, value in t.dict(exclude_unset=True).items():
         setattr(task, key, value)

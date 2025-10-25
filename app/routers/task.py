@@ -14,7 +14,7 @@ def get_tasks(db: Session = Depends(get_db)):
     tasks = task.get_tasks(db)
     if not tasks:
         raise HTTPException(status_code=404, detail="No tasks found")
-    return {"results": tasks}
+    return tasks
 
 
 @router.get("/{task_id}")
@@ -22,7 +22,7 @@ def get_task_by_id(task_id: int, db: Session = Depends(get_db)):
     tasks = task.get_task_by_id(db, task_id)
     if not tasks:
         raise HTTPException(status_code=404, detail="No tasks found")
-    return {"results": tasks}
+    return tasks
 
 
 @router.get("/title/{task_title}")
@@ -41,11 +41,13 @@ def create_new_task(t: TaskCreate, db: Session = Depends(get_db)):
     return created_task
 
 
-@router.put("/update", response_model=TaskResponse, status_code=200)
-def update_task(t: TaskUpdate, db: Session = Depends(get_db)):
-    updated_task = task.update_task(db, t)
+@router.put("/update/{id}", response_model=TaskResponse, status_code=200)
+def update_task(id: int, t: TaskUpdate, db: Session = Depends(get_db)):
+    updated_task = task.update_task(db, id, t)
+
     if not updated_task:
         raise HTTPException(status_code=404, detail="Task not found")
+
     return updated_task
 
 
