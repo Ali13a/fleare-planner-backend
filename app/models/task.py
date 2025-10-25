@@ -22,6 +22,7 @@ class Task(Base):
     Time_required = Column(Integer, nullable=True)
     due_date = Column(DateTime, nullable=True, index=True, )
     tags = Column(Enum(TaskTags), default=TaskTags.normal, index=True)
+    is_complete=Column(Boolean, default=False)
     owner_id = Column(Integer, nullable=True, index=True)  # for future auth
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())

@@ -9,7 +9,7 @@ from app.schemas.task import TaskCreate, TaskUpdate
 
 
 def get_tasks(db: Session):
-    tasks = db.query(Task).filter(Task.is_deleted == False).all()
+    tasks = db.query(Task).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
 
     # تسک‌های اداری جلوتر از نرمال
     tasks.sort(key=lambda t: (0 if "administrative" in (t.tags or []) else 1, t.created_at))

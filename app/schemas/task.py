@@ -24,7 +24,8 @@ class TaskBase(BaseModel):
     priority: Optional[int] = 3
     tags: Optional[TaskTags] = TaskTags.normal
     Time_required: Optional[int] = 60
-    due_date: Optional[datetime] = None
+    due_date: Optional[datetime] = datetime.now()
+    is_complete:Optional[bool]=False
 
 
 class TaskCreate(TaskBase):
@@ -38,6 +39,7 @@ class TaskUpdate(BaseModel):
     status: Optional[TaskStatus] = TaskStatus.todo
     priority: Optional[int]
     tags: Optional[TaskTags] = TaskTags.normal
+    is_complete:Optional[bool]=False
     Time_required: Optional[int] = 60
 
 
@@ -54,6 +56,7 @@ class TaskResponse(TaskBase):
     tags: Optional[TaskTags] = TaskTags.normal
     owner_id: Optional[int] = None
     is_deleted: bool
+    is_complete:bool
 
     class Config:
         from_attributes = True
