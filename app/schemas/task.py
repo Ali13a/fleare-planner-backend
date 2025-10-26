@@ -40,7 +40,7 @@ class TaskUpdate(BaseModel):
     priority: Optional[int]
     tags: Optional[TaskTags] = TaskTags.normal
     Time_required: Optional[int] = 60
-    is_complete:Optional[bool]
+    is_complete:Optional[bool] = False
 
 
 class TaskResponse(TaskBase):
@@ -55,8 +55,8 @@ class TaskResponse(TaskBase):
     updated_at: Optional[datetime] = None
     tags: Optional[TaskTags] = TaskTags.normal
     owner_id: Optional[int] = None
+    is_complete:Optional[bool] = False
     is_deleted: bool
-    is_complete:bool
 
     class Config:
         from_attributes = True
