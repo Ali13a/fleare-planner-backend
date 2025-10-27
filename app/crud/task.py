@@ -11,9 +11,8 @@ from sqlalchemy.sql import func
 
 def get_tasks(db: Session):
     now = datetime.now()
-    now2= date.today()
-    tasks = db.query(Task).filter(func.date(Task.due_date)==now2).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
-    # tasks = db.query(Task).filter(func.date(Task.due_date)==now2).filter(Task.is_deleted == False).all();
+    # tasks = db.query(Task).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
+    tasks = db.query(Task).filter(Task.is_deleted == False).all()
 
     # تسک‌های اداری جلوتر از نرمال
     def tag_priority(tags):
@@ -21,10 +20,9 @@ def get_tasks(db: Session):
             return 0
         else:
             return 1
-    tasks.sort(key=lambda t: (3 if t.due_date < now else 2, tag_priority(t.tags) , t.created_at))
+    tasks.sort(key=lambda t: (3 if t.due_date < now else 2, tag_priority(t.tags) , t.priority))
 
     organized_tasks = []
-    pastdate=[]
 
     ADMIN_START, ADMIN_END = time(8, 0), time(14, 0)
     NORMAL_START, NORMAL_END = time(8, 0), time(22, 0)
@@ -72,10 +70,9 @@ def get_tasks(db: Session):
 
         task.due_date = start_time
 
-        #if task.due_date.date() == now.date():
-            #organized_tasks.append(task)
+        if task.due_date.date() == now.date():
+            organized_tasks.append(task)
 
-        organized_tasks.append(task)
 
     
 
