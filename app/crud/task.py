@@ -69,7 +69,14 @@ def get_tasks(db: Session):
                         "last_task": datetime.combine(task_day, NORMAL_START)
                     }
 
+        task.due_date = start_time
+
+        #if task.due_date.date() == now.date():
+            #organized_tasks.append(task)
+
         organized_tasks.append(task)
+
+    
 
     return organized_tasks
 
