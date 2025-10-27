@@ -1,0 +1,1 @@
+SELECT id, title, description, due_date FROM tasks;

@@ -1,6 +1,9 @@
 # عملیات CRUD برای مدل Task
 from http.client import HTTPException
 from datetime import datetime, timedelta
+
+from sqlalchemy.sql.functions import now
+
 from app.models.task import Task
 from sqlalchemy.orm import Session
 from sqlalchemy import Case
@@ -20,7 +23,8 @@ def get_tasks(db: Session):
             return 0
         else:
             return 1
-    tasks.sort(key=lambda t: (3 if t.due_date < now else 2, tag_priority(t.tags) , t.priority))
+
+    tasks.sort(key=lambda t: (3 if t.due_date < now else 2, tag_priority(t.tags), t.priority))
 
     organized_tasks = []
 
@@ -73,9 +77,6 @@ def get_tasks(db: Session):
         if task.due_date.date() == now.date():
             organized_tasks.append(task)
 
-
-    
-
     return organized_tasks
 
 
@@ -87,9 +88,16 @@ def get_task_by_id(db: Session, task_id: str):
 
 
 def get_task_by_title(db: Session, task_title: str):
-    tasks = db.query(Task) \
-        .filter(Task.title.ilike(f"%{task_title}%"), Task.is_deleted == False) \
+    today = datetime.now().date()
+
+    tasks = (
+        db.query(Task)
+        .filter(Task.title.ilike(f"%{task_title}%"))
+        .filter(Task.is_deleted == False)
+        .filter(func.date(Task.due_date) == today)
         .all()
+    )
+
     return tasks
 
 
@@ -117,6 +125,6 @@ def update_task(db: Session, id: int, t: TaskUpdate):
 
 def delete_task(db: Session, task_id: int):
     task = db.query(Task).filter(Task.id == task_id, Task.is_deleted == False).first()
-    task.is_deleted = True
+    db.delete(task)
     db.commit()
     return True
