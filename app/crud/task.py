@@ -13,6 +13,7 @@ def get_tasks(db: Session):
     now = datetime.now()
     now2= date.today()
     tasks = db.query(Task).filter(func.date(Task.due_date)==now2).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
+    # tasks = db.query(Task).filter(func.date(Task.due_date)==now2).filter(Task.is_deleted == False).all();
 
     # تسک‌های اداری جلوتر از نرمال
     def tag_priority(tags):
