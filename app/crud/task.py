@@ -1,15 +1,10 @@
 # عملیات CRUD برای مدل Task
 from http.client import HTTPException
 from datetime import datetime, timedelta
-
-from sqlalchemy.sql.functions import now
-
 from app.models.task import Task
 from sqlalchemy.orm import Session
-from sqlalchemy import Case
 from datetime import datetime, timedelta, time, date
 from app.schemas.task import TaskCreate, TaskUpdate
-from sqlalchemy.sql import func
 
 
 def get_tasks(db: Session):
@@ -17,7 +12,6 @@ def get_tasks(db: Session):
     # tasks = db.query(Task).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
     tasks = db.query(Task).filter(Task.is_deleted == False).all()
 
-    # تسک‌های اداری جلوتر از نرمال
     def tag_priority(tags):
         if "administrative" in tags:
             return 0
@@ -31,20 +25,18 @@ def get_tasks(db: Session):
     ADMIN_START, ADMIN_END = time(8, 0), time(14, 0)
     NORMAL_START, NORMAL_END = time(8, 0), time(22, 0)
 
-    day_usage = {}  # {date: {"last_task": datetime}}
+    day_usage = {}
 
     for task in tasks:
         duration = getattr(task, "Time_required", 60)
         is_admin = "administrative" in (task.tags or [])
         task_day = max(task.due_date.date() if task.due_date else now.date(), now.date())
 
-        # اگر از بازه امروز گذشته، بنداز روز بعد
         if is_admin and now.time() >= ADMIN_END:
             task_day += timedelta(days=1)
         elif not is_admin and now.time() >= NORMAL_END:
             task_day += timedelta(days=1)
 
-        # آماده‌سازی روز
         if task_day not in day_usage:
             day_usage[task_day] = {
                 "last_task": datetime.combine(task_day, NORMAL_START)
@@ -74,8 +66,7 @@ def get_tasks(db: Session):
 
         task.due_date = start_time
 
-        if task.due_date.date() == now.date():
-            organized_tasks.append(task)
+        organized_tasks.append(task)
 
     return organized_tasks
 
@@ -88,13 +79,10 @@ def get_task_by_id(db: Session, task_id: str):
 
 
 def get_task_by_title(db: Session, task_title: str):
-    today = datetime.now().date()
-
     tasks = (
         db.query(Task)
         .filter(Task.title.ilike(f"%{task_title}%"))
         .filter(Task.is_deleted == False)
-        .filter(func.date(Task.due_date) == today)
         .all()
     )
 
@@ -111,11 +99,11 @@ def create_task(db: Session, t: TaskCreate):
 
 def update_task(db: Session, id: int, t: TaskUpdate):
     task = db.query(Task).filter(Task.id == id, Task.is_deleted == False).first()
-
     if not task:
         return None
 
-    for key, value in t.dict(exclude_unset=True).items():
+    update_data = t.dict(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(task, key, value)
 
     db.commit()
@@ -127,4 +115,5 @@ def delete_task(db: Session, task_id: int):
     task = db.query(Task).filter(Task.id == task_id, Task.is_deleted == False).first()
     db.delete(task)
     db.commit()
+    db.refresh()
     return True
