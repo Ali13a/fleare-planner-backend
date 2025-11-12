@@ -12,8 +12,8 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 @router.get("/")
 def get_tasks(db: Session = Depends(get_db)):
     tasks = task.get_tasks(db)
-    # if not tasks:
-    #     raise HTTPException(status_code=404, detail="No tasks found")
+    if not tasks:
+        raise HTTPException(status_code=404, detail="No tasks found")
     return tasks
 
 
