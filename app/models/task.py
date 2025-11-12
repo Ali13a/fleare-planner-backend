@@ -1,5 +1,5 @@
 # تعریف مدل ORM
-from datetime import datetime
+from datetime import datetime , timedelta ,timezone
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, Boolean, ForeignKey
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -10,7 +10,7 @@ def round_to_minute():
     now = datetime.utcnow()
     return now.replace(second=0, microsecond=0)
 
-
+iran_tz=timezone(timedelta(hours=3,minutes=30))
 class Task(Base):
     __tablename__ = "tasks"
 
@@ -23,7 +23,8 @@ class Task(Base):
     due_date = Column(DateTime, nullable=True, index=True, )
     tags = Column(Enum(TaskTags), default=TaskTags.normal, index=True)
     owner_id = Column(Integer, nullable=True, index=True)  # for future auth
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+    created_at = Column(DateTime(timezone=True),default=lambda:datetime.now(iran_tz))
+    updated_at =Column(DateTime(timezone=True),default=lambda:datetime.now(iran_tz),onupdate=lambda:datetime.now(iran_tz))
     is_deleted = Column(Boolean, default=False)
     is_complete = Column(Boolean, default=False)
+    end_time=Column(DateTime,nullable=True)

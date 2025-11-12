@@ -1,6 +1,6 @@
 # app/schemas/task.py
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from typing import Optional
 from enum import Enum
 
@@ -10,6 +10,7 @@ class TaskStatus(str, Enum):
     in_progress = "in_progress"
     done = "done"
     archived = "archived"
+    missed='missed'
 
 
 class TaskTags(str, Enum):
@@ -25,7 +26,7 @@ class TaskBase(BaseModel):
     tags: Optional[TaskTags] = TaskTags.normal
     Time_required: Optional[int] = 60
     is_complete: Optional[bool] = False
-    due_date: Optional[datetime] = datetime.now()
+    due_date: Optional[datetime] =None
 
 
 class TaskCreate(TaskBase):
@@ -40,6 +41,8 @@ class TaskUpdate(BaseModel):
     tags: Optional[TaskTags] = None
     Time_required: Optional[int] = None
     is_complete: Optional[bool] = None
+    due_date:Optional[datetime]=None
+    end_time:Optional[datetime]=None
 
     class Config:
         extra = "ignore"
@@ -59,6 +62,7 @@ class TaskResponse(TaskBase):
     owner_id: Optional[int] = None
     is_complete: Optional[bool] = False
     is_deleted: bool
+    end_time:Optional[datetime]=None
 
     class Config:
         from_attributes = True
