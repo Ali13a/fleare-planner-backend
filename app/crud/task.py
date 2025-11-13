@@ -9,87 +9,12 @@ from sqlalchemy import or_
 
 
 def get_tasks(db: Session):
-    # try:
-    #     now = datetime.now()
-    #     tasks =db.query(Task).all()
-    #     for t in tasks:
-    #         print("Raw Task:",t.id,t.due_date,t.end_time,t.status)
-    #     # 📝 فقط تسک‌های قابل زمان‌بندی
-    #     schedulable_tasks = db.query(Task).filter(
-    #         Task.status.in_(['todo','missed']),
-    #         Task.is_deleted == False
-    #     ).all()
-
-    #     # 📝 تسک‌های در حال انجام و انجام شده بدون تغییر
-    #     
-
-    #     # اولویت بندی برای schedulable_tasks
-    #     def tag_priority(tags):
-    #         if "administrative" in (tags or ""):
-    #             return 0
-    #         return 1
-
-    #     
-    #     # 🔧 زمان‌بندی فقط برای تسک‌های schedulable
-    #     ADMIN_START, ADMIN_END = time(8, 0), time(14, 0)
-    #     NORMAL_START, NORMAL_END = time(8, 0), time(22, 0)
-    #     day_usage = {}
-
-    #     for task in schedulable_tasks:
-    #         duration = getattr(task, "Time_required", 60)
-    #         is_admin = "administrative" in (task.tags or "")
-    #         task_day = max((task.due_date.date() if task.due_date else now.date()), now.date())
-
-    #         # اگر زمان الان خارج از محدوده کاریه، روز بعد رو انتخاب کن
-    #         if is_admin and now.time() >= ADMIN_END:
-    #             task_day += timedelta(days=1)
-    #         elif not is_admin and now.time() >= NORMAL_END:
-    #             task_day += timedelta(days=1)
-
-    #         if task_day not in day_usage:
-    #             day_usage[task_day] = {"last_task": datetime.combine(task_day, NORMAL_START)}
-
-    #         # زمان‌بندی امن با کنترل بازه‌ها
-    #         while True:
-    #             day_start = datetime.combine(task_day, ADMIN_START if is_admin else NORMAL_START)
-    #             day_end = datetime.combine(task_day, ADMIN_END if is_admin else NORMAL_END)
-
-    #             if not task.due_date or task.due_date < now:
-    #                 start_time = max(day_usage[task_day]["last_task"], day_start, now)
-    #             else:
-    #                 start_time = task.due_date
-
-    #             end_time = start_time + timedelta(minutes=duration)
-
-    #             # اطمینان از محدوده کاری
-    #             if start_time < day_start:
-    #                 start_time = day_start
-    #                 end_time = start_time + timedelta(minutes=duration)
-
-    #             if end_time > day_end:
-    #                 task_day += timedelta(days=1)
-    #                 if task_day not in day_usage:
-    #                     day_usage[task_day] = {"last_task": datetime.combine(task_day, NORMAL_START)}
-    #                 continue
-    #             task.due_date=start_time
-    #             task.end_time=end_time
-    #             day_usage[task_day]["last_task"] = end_time
-    #             break
-
-    #     # ترکیب static_tasks و schedulable_tasks بدون دستکاری تاریخ static_tasks
-    #     organized_tasks = static_tasks + schedulable_tasks
-
-    #     return organized_tasks
-    # except Exception as e :
-    #     print("Error",str(e))
-    #     return []
-
-
 
     now = datetime.now()
     # tasks = db.query(Task).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
     tasks = db.query(Task).filter(Task.status.in_(['todo','missed'])).filter(Task.is_deleted == False).all()
-    static_tasks = db.query(Task).filter(Task.status.in_(['in_progress','done'])).filter(Task.is_deleted == False).all()
+    in_progress_tasks = db.query(Task).filter(Task.status == 'in_progress').filter(Task.is_deleted == False).all()
+    done_tasks=db.query(Task).filter(Task.status == "done").filter(Task.is_deleted == False).all()
 
     # تسک‌های اداری جلوتر از نرمال
     def tag_priority(tags):
@@ -98,19 +23,21 @@ def get_tasks(db: Session):
         else:
             return 1
     tasks.sort(key=lambda t: (tag_priority(t.tags), t.priority, 3 if t.status == "missed" else 2, t.due_date))
-    static_tasks.sort(key=lambda t: t.due_date)
-    organized_tasks = []
-    for i in static_tasks:
-        organized_tasks.append(i)
-    
+    in_progress_tasks.sort(key=lambda t: t.due_date)
+    done_tasks.sort(key=lambda t : t.due_date)
+    for t in done_tasks:
+        db.expunge(t)
+    organized_tasks=[]
     static_end_times=[
         t.due_date + timedelta(minutes=getattr(t,"Time_required",60))
-        for t in static_tasks if t.due_date is not None
+        for t in in_progress_tasks if t.due_date is not None 
     ]
+    for i in in_progress_tasks:
+        print(i.due_date)
     last_static_end=max(static_end_times)if static_end_times else now
 
     ADMIN_START, ADMIN_END = time(8, 0), time(14, 0)
-    NORMAL_START, NORMAL_END = time(8, 0), time(23, 0)
+    NORMAL_START, NORMAL_END = time(8, 0), time(22, 0)
     day_usage = {}
     for task in tasks:
         duration = getattr(task, "Time_required", 60)
@@ -159,9 +86,11 @@ def get_tasks(db: Session):
         
         
         organized_tasks.append(task)
-
-
-    return organized_tasks
+    last_organized=[]
+    last_organized.extend(done_tasks)
+    last_organized.extend(in_progress_tasks)
+    last_organized.extend(organized_tasks)
+    return last_organized
 
 def get_task_by_title(db: Session, task_title: str):
     tasks = (
@@ -200,5 +129,4 @@ def delete_task(db: Session, task_id: int):
     task = db.query(Task).filter(Task.id == task_id, Task.is_deleted == False).first()
     db.delete(task)
     db.commit()
-    db.refresh()
     return True
