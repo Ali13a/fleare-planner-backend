@@ -12,13 +12,7 @@ def get_tasks(db: Session):
     # tasks = db.query(Task).filter(Task.is_deleted == False).filter(Task.is_complete==False).all()
     tasks = db.query(Task).filter(Task.is_deleted == False).all()
 
-    def tag_priority(tags):
-        if "administrative" in tags:
-            return 0
-        else:
-            return 1
-
-    tasks.sort(key=lambda t: (1 if t.is_overdue else 0, tag_priority(t.tags), t.priority))
+    tasks.sort(key=lambda t: (t.is_overdue, "administrative" in t.tags, t.priority))
 
     organized_tasks = []
 
