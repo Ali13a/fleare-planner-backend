@@ -18,7 +18,7 @@ def get_tasks(db: Session):
         else:
             return 1
 
-    tasks.sort(key=lambda t: (3 if t.due_date < now else 2, tag_priority(t.tags), t.priority))
+    tasks.sort(key=lambda t: (1 if t.is_overdue else 0, tag_priority(t.tags), t.priority))
 
     organized_tasks = []
 
