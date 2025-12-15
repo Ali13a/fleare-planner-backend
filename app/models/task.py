@@ -2,6 +2,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, Boolean, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import column_property
 from app.db.base import Base
 from app.schemas.task import TaskStatus, TaskTags
 
@@ -27,3 +28,5 @@ class Task(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
     is_deleted = Column(Boolean, default=False)
     is_complete = Column(Boolean, default=False)
+    is_overdue = column_property(func.datetime('now') > due_date) # Works only on SQLite
+    days_past = column_property(func.cast(func.julianday('now') - func.julianday(due_date), Integer)) # Works only on SQLite
